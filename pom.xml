@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ru.etu</groupId>
-    <artifactId>pet-ci</artifactId>
+    <groupId>ru.etu.petci</groupId>
+    <artifactId>petci</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
 
@@ -50,6 +50,13 @@
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.0.2</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <mainClass>ru.etu.petci.Main</mainClass>
+                            </manifest>
+                        </archive>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
@@ -73,7 +80,7 @@
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>1.6.0</version>
                     <configuration>
-                        <mainClass>ru.etu.App</mainClass>
+                        <mainClass>ru.etu.petci.Main</mainClass>
                     </configuration>
                 </plugin>
             </plugins>
