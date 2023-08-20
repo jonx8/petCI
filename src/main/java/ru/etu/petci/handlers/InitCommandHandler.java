@@ -42,7 +42,7 @@ public class InitCommandHandler implements CommandHandler {
         } else {
             configurator.saveRepositoryConfig(repositoryPath, branchName);
         }
-
+        scanner.close();
         System.out.println("Successful initialization!");
         return 0;
     }
