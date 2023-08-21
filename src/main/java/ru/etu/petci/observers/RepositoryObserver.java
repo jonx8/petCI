@@ -1,10 +1,11 @@
 package ru.etu.petci.observers;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import ru.etu.petci.exceptions.RepositoryNotFoundException;
+import ru.etu.petci.jobs.JobsExecutor;
+
+import java.io.*;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
@@ -15,9 +16,11 @@ import java.util.logging.Logger;
 
 public class RepositoryObserver {
 
+    public static final String REPOSITORY_PROPERTIES = "repository.properties";
     private Path repositoryPath;
-    private String lastHash;             // Hash of last commit
-    private String branchName;  // Name of the observed branch
+    private String lastHash;         // Hash of last commit
+    private String branchName;       // Name of the observed branch
+    private JobsExecutor executor;
     private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private static final Logger LOGGER = Logger.getLogger(RepositoryObserver.class.getName());
 
@@ -25,21 +28,17 @@ public class RepositoryObserver {
         LOGGER.setLevel(Level.INFO);
     }
 
-    public boolean setRepositoryPath(Path path) {
-        boolean isSet = false;
-        path = path.toAbsolutePath().normalize();
 
+    public boolean isRepositoryExists() throws InterruptedException {
+        if (Objects.isNull(repositoryPath)) {
+            return false;
+        }
         Process gitProcess = null;
-
+        int exitStatus = -1;
         try {
-            gitProcess = Runtime.getRuntime().exec("git ls-remote %s".formatted(path));
-            if (gitProcess.exitValue() == 0) {
-                repositoryPath = path;
-                isSet = true;
-            } else {
-                LOGGER.log(Level.WARNING, "Unable to find repository by path: {0}", repositoryPath);
-                System.out.println("Unable to find repository by path");
-            }
+            gitProcess = Runtime.getRuntime().exec("git ls-remote %s".formatted(repositoryPath));
+            gitProcess.waitFor();
+            exitStatus = gitProcess.exitValue();
         } catch (IOException e) {
             LOGGER.warning("Error while executing 'git ls-remote'.%n" + e.getMessage());
         } finally {
@@ -47,7 +46,14 @@ public class RepositoryObserver {
                 gitProcess.destroy();
             }
         }
-        return isSet;
+        return exitStatus == 0;
+    }
+
+
+    public void setRepositoryPath(Path path) {
+        if (Objects.isNull(path))
+            return;
+        repositoryPath = path.toAbsolutePath().normalize();
     }
 
 
@@ -63,8 +69,10 @@ public class RepositoryObserver {
         return branchName;
     }
 
-    public boolean setRepositoryPath(String path) {
-        return setRepositoryPath(Path.of(path));
+    public void setRepositoryPath(String path)  {
+        if (Objects.isNull(path))
+            return;
+        setRepositoryPath(Path.of(path));
     }
 
     public Path getRepositoryPath() {
@@ -78,37 +86,51 @@ public class RepositoryObserver {
             String currentHash = scanner.nextLine();
             if (currentHash.length() == 40 && !currentHash.equals(lastHash)) {
                 lastHash = currentHash;
-                try {
-                    Properties properties = new Properties();
-                    properties.load(new FileReader("repository.properties"));
+
+
+                // Save new hash to properties
+                Properties properties = new Properties();
+                try (var propertyReader = new FileReader(REPOSITORY_PROPERTIES);
+                     var propertyWriter = new FileWriter(REPOSITORY_PROPERTIES)) {
+                    properties.load(propertyReader);
                     properties.setProperty("last_hash", lastHash);
-                    properties.store(new FileWriter("repository.properties"), "repository settings");
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Error while working with repository properties");
+                    properties.store(propertyWriter, "repository settings");
                 }
+
                 LOGGER.log(Level.INFO, "Commits checked. New commit was found. Hash: {0}", lastHash);
+                executor.runJobs();
             } else {
                 LOGGER.info("Commits checked. No new commits found.");
             }
         } catch (FileNotFoundException e) {
-            LOGGER.warning(e.getMessage());
-            System.out.printf("Branch \"%s\" does not exist!%n", getBranchName());
+            LOGGER.severe(e.getMessage());
+            System.out.printf("Unable to find branch \"%s\"%n", getBranchName());
+            service.shutdown();
+            System.exit(1);
+        } catch (IOException e) {
+            LOGGER.severe(e.getMessage());
             service.shutdown();
             System.exit(1);
         }
     }
 
-    public void start() throws InterruptedException {
-        // Check for a new commit per 3 seconds
-        if (repositoryPath != null) {
+    public void start() throws InterruptedException, RepositoryNotFoundException {
+        if (isRepositoryExists()) {
+            // Check for a new commit per 3 seconds
             service.scheduleWithFixedDelay(this::checkRepositoryUpdate, 0, 3, TimeUnit.SECONDS);
             Thread.currentThread().join();
+        } else {
+            throw new RepositoryNotFoundException("Unable to find git repository by path: %s".formatted(repositoryPath));
         }
     }
 
     public void setLastHash(String lastHash) {
-        if (lastHash.length() == 40) {
+        if (Objects.nonNull(lastHash) && lastHash.length() == 40) {
             this.lastHash = lastHash;
         }
+    }
+
+    public void setExecutor(JobsExecutor executor) {
+        this.executor = executor;
     }
 }
