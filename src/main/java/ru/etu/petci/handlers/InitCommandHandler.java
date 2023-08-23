@@ -2,6 +2,7 @@ package ru.etu.petci.handlers;
 
 import ru.etu.petci.configuration.Configurator;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -37,10 +38,15 @@ public class InitCommandHandler implements CommandHandler {
         // If branchName is empty, using master-branch
         System.out.print("Name of observing branch (default - master): ");
         var branchName = scanner.nextLine().strip();
-        if (branchName.isEmpty()) {
-            configurator.saveRepositoryConfig(repositoryPath, "master");
-        } else {
-            configurator.saveRepositoryConfig(repositoryPath, branchName);
+        try {
+            if (branchName.isEmpty()) {
+                configurator.saveRepositoryConfig(repositoryPath, "master");
+            } else {
+                configurator.saveRepositoryConfig(repositoryPath, branchName);
+            }
+        } catch (IOException e) {
+            LOGGER.severe(e.getMessage());
+            return 1;
         }
         scanner.close();
         System.out.println("Successful initialization!");
