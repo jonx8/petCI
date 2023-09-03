@@ -3,10 +3,13 @@ package ru.etu.petci.handlers;
 import ru.etu.petci.configuration.Configurator;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static ru.etu.petci.Main.JOBS_SETTINGS_FILE;
 
 public class InitCommandHandler implements CommandHandler {
     private static final Logger LOGGER = Logger.getLogger(InitCommandHandler.class.getName());
@@ -15,9 +18,11 @@ public class InitCommandHandler implements CommandHandler {
         LOGGER.setLevel(Level.WARNING);
     }
 
+
     @Override
     public int handle(String arg) {
         Objects.requireNonNull(arg);
+
 
         var configurator = new Configurator();
         var scanner = new Scanner(System.in);
@@ -38,7 +43,19 @@ public class InitCommandHandler implements CommandHandler {
         // If branchName is empty, using master-branch
         System.out.print("Name of observing branch (default - master): ");
         var branchName = scanner.nextLine().strip();
+
+        scanner.close();
+
+
+
         try {
+            if (Path.of(JOBS_SETTINGS_FILE).toFile().createNewFile()) {
+                LOGGER.log(Level.INFO, "File \"{0}\" has been created", JOBS_SETTINGS_FILE);
+            }
+            else {
+                LOGGER.log(Level.INFO, "File \"{0}\" has already existed", JOBS_SETTINGS_FILE);
+            }
+
             if (branchName.isEmpty()) {
                 configurator.saveRepositoryConfig(repositoryPath, "master");
             } else {
@@ -48,7 +65,7 @@ public class InitCommandHandler implements CommandHandler {
             LOGGER.severe(e.getMessage());
             return 1;
         }
-        scanner.close();
+
         System.out.println("Successful initialization!");
         return 0;
     }

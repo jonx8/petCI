@@ -87,7 +87,6 @@ public class RepositoryObserver {
             if (currentHash.length() == 40 && !currentHash.equals(lastHash)) {
                 lastHash = currentHash;
 
-
                 // Save new hash to properties
                 Properties properties = new Properties();
                 try (var propertyReader = new FileReader(REPOSITORY_PROPERTIES);

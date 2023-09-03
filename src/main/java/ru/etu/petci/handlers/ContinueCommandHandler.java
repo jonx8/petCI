@@ -8,7 +8,6 @@ import ru.etu.petci.jobs.JobsExecutor;
 import ru.etu.petci.observers.RepositoryObserver;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -29,8 +28,7 @@ public class ContinueCommandHandler implements CommandHandler {
         var configurator = new Configurator();
         try {
             RepositoryObserver repositoryObserver = configurator.readRepositoryConfig();
-            List<Job> jobs = new ArrayList<>();
-            // TODO Reading jobs from properties
+            List<Job> jobs = configurator.readJobsConfig();
             repositoryObserver.setExecutor(new JobsExecutor(jobs));
             repositoryObserver.start();
         } catch (InterruptedException e) {
@@ -38,7 +36,6 @@ public class ContinueCommandHandler implements CommandHandler {
             Thread.currentThread().interrupt();
         } catch (IOException | RepositoryNotFoundException e) {
             LOGGER.log(Level.SEVERE, e.getMessage());
-            return 1;
         }
         return 1;
     }
