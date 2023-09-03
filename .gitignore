@@ -47,4 +47,4 @@ buildNumber.properties
 .idea/
 
 # SonarLint plugin for Idea
-pet-ci.iml
+petci.iml
