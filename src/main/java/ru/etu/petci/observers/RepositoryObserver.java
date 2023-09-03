@@ -69,7 +69,7 @@ public class RepositoryObserver {
         return branchName;
     }
 
-    public void setRepositoryPath(String path)  {
+    public void setRepositoryPath(String path) {
         if (Objects.isNull(path))
             return;
         setRepositoryPath(Path.of(path));
@@ -93,6 +93,8 @@ public class RepositoryObserver {
                 try (var propertyReader = new FileReader(REPOSITORY_PROPERTIES);
                      var propertyWriter = new FileWriter(REPOSITORY_PROPERTIES)) {
                     properties.load(propertyReader);
+                    properties.setProperty("repository_path", repositoryPath.toString());
+                    properties.setProperty("branch_name", branchName);
                     properties.setProperty("last_hash", lastHash);
                     properties.store(propertyWriter, "repository settings");
                 }
