@@ -4,12 +4,15 @@ package ru.etu.petci.configuration;
 import ru.etu.petci.jobs.Job;
 import ru.etu.petci.observers.RepositoryObserver;
 
-import java.io.*;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
-import static ru.etu.petci.Main.JOBS_DIR_NAME;
+import static ru.etu.petci.Main.JOBS_SETTINGS_FILE;
 
 public class Configurator {
 
@@ -41,17 +44,33 @@ public class Configurator {
         saveRepositoryConfig(repoPath, branchName, "");
     }
 
-    public void saveJobConfig(Job job) {
-        Objects.requireNonNull(job);
-        try (var out = new BufferedWriter(new FileWriter(JOBS_DIR_NAME + File.separator + job.getName()))) {
-            out.append(job.getName());
-            out.newLine();
-            out.append(job.getScriptFile().toString());
-            out.newLine();
-            out.append(String.valueOf(job.isActive()));
-        } catch (IOException e) {
-            System.out.println("Error with writing jobFile");
-            System.exit(1);
+
+    public List<Job> readJobsConfig() throws IOException {
+        List<Job> jobsList = new ArrayList<>();
+        try (var propertiesReader = new FileReader(JOBS_SETTINGS_FILE)) {
+            var properties = new Properties();
+            properties.load(propertiesReader);
+            for (String jobName : properties.stringPropertyNames()) {
+                Path scriptPath = Path.of(properties.getProperty(jobName));
+                jobsList.add(new Job(scriptPath, jobName));
+            }
+        }
+        return jobsList;
+    }
+
+
+    public void saveJobsConfig(String jobName, String scriptPath) throws IOException {
+        try (var propertiesReader = new FileReader(JOBS_SETTINGS_FILE);
+             var propertiesWriter = new FileWriter(JOBS_SETTINGS_FILE)) {
+            var properties = new Properties();
+            properties.load(propertiesReader);
+            if (properties.getProperty(jobName) == null) {
+                properties.setProperty(jobName, Path.of(scriptPath).toAbsolutePath().normalize().toString());
+                properties.store(propertiesWriter, "Jobs settings properties");
+            } else {
+                System.out.printf("Job with name \"%s\" has already existed%n", jobName);
+            }
         }
     }
+
 }
