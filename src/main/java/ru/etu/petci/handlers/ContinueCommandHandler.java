@@ -7,7 +7,6 @@ import ru.etu.petci.jobs.Job;
 import ru.etu.petci.jobs.JobsExecutor;
 import ru.etu.petci.observers.RepositoryObserver;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -35,7 +34,7 @@ public class ContinueCommandHandler implements CommandHandler {
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, "The program was interrupted");
             Thread.currentThread().interrupt();
-        } catch (RepositoryNotFoundException | BackingStoreException | IOException e) {
+        } catch (RepositoryNotFoundException | BackingStoreException e) {
             LOGGER.log(Level.SEVERE, e.getMessage());
         }
         return 1;

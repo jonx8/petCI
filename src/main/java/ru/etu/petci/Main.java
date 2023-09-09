@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
-    public static final String JOBS_SETTINGS_FILE = "jobs.properties";
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     static {

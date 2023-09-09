@@ -4,7 +4,6 @@ package ru.etu.petci.configuration;
 import ru.etu.petci.jobs.Job;
 import ru.etu.petci.observers.RepositoryObserver;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class Configurator {
     }
 
 
-    public List<Job> readJobsConfig() throws IOException, BackingStoreException {
+    public List<Job> readJobsConfig() throws BackingStoreException {
         List<Job> jobsList = new ArrayList<>();
         var jobsPreferences = Preferences.userRoot().node(JOBS_PREFERENCES);
         for (String jobName : jobsPreferences.keys()) {
@@ -48,7 +47,7 @@ public class Configurator {
     }
 
 
-    public void saveJobsConfig(String jobName, String scriptPath) throws IOException {
+    public void saveJobsConfig(String jobName, String scriptPath) {
         var jobsPreferences = Preferences.userRoot().node(JOBS_PREFERENCES);
 
         if (jobsPreferences.get(jobName, null) == null) {

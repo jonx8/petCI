@@ -2,7 +2,6 @@ package ru.etu.petci.handlers;
 
 import ru.etu.petci.configuration.Configurator;
 
-import java.io.IOException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,14 +34,8 @@ public class AddCommandHandler implements CommandHandler {
             return 1;
         }
 
+        configurator.saveJobsConfig(jobName, scriptPath);
         scanner.close();
-
-        try {
-            configurator.saveJobsConfig(jobName, scriptPath);
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
-            return 1;
-        }
         return 0;
     }
 }
