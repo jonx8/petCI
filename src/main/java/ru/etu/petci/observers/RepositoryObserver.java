@@ -3,20 +3,22 @@ package ru.etu.petci.observers;
 import ru.etu.petci.exceptions.RepositoryNotFoundException;
 import ru.etu.petci.jobs.JobsExecutor;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+
+import static ru.etu.petci.configuration.Configurator.REPOSITORY_PREFERENCES;
 
 public class RepositoryObserver {
 
-    public static final String REPOSITORY_PROPERTIES = "repository.properties";
     private Path repositoryPath;
     private String lastHash;         // Hash of last commit
     private String branchName;       // Name of the observed branch
@@ -85,18 +87,9 @@ public class RepositoryObserver {
         try (Scanner scanner = new Scanner(lastCommitMaster.toFile())) {
             String currentHash = scanner.nextLine();
             if (currentHash.length() == 40 && !currentHash.equals(lastHash)) {
+                // Update hash
                 lastHash = currentHash;
-
-                // Save new hash to properties
-                Properties properties = new Properties();
-                try (var propertyReader = new FileReader(REPOSITORY_PROPERTIES);
-                     var propertyWriter = new FileWriter(REPOSITORY_PROPERTIES)) {
-                    properties.load(propertyReader);
-                    properties.setProperty("repository_path", repositoryPath.toString());
-                    properties.setProperty("branch_name", branchName);
-                    properties.setProperty("last_hash", lastHash);
-                    properties.store(propertyWriter, "repository settings");
-                }
+                Preferences.userRoot().node(REPOSITORY_PREFERENCES).put("last_hash", lastHash);
 
                 LOGGER.log(Level.INFO, "Commits checked. New commit was found. Hash: {0}", lastHash);
                 executor.runJobs();

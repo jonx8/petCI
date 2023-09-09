@@ -5,13 +5,10 @@ import ru.etu.petci.handlers.CommandHandler;
 import ru.etu.petci.handlers.ContinueCommandHandler;
 import ru.etu.petci.handlers.InitCommandHandler;
 
-import java.io.IOException;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
-    public static final String SETTINGS_FILE_NAME = "settings.properties";
     public static final String JOBS_SETTINGS_FILE = "jobs.properties";
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
@@ -21,15 +18,6 @@ public class Main {
 
 
     public static void main(String[] args) {
-
-        try {
-            Properties settings = new Properties();
-            settings.load(Main.class.getClassLoader().getResourceAsStream(SETTINGS_FILE_NAME));
-            settings.getProperty("JOBS_DIR_NAME", "jobs");
-        } catch (IOException e) {
-            System.out.println("Unable to read settings property");
-            System.exit(1);
-        }
 
         int exitStatus;
         if (args.length > 0) {
