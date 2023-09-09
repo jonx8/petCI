@@ -2,14 +2,10 @@ package ru.etu.petci.handlers;
 
 import ru.etu.petci.configuration.Configurator;
 
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static ru.etu.petci.Main.JOBS_SETTINGS_FILE;
 
 public class InitCommandHandler implements CommandHandler {
     private static final Logger LOGGER = Logger.getLogger(InitCommandHandler.class.getName());
@@ -46,24 +42,10 @@ public class InitCommandHandler implements CommandHandler {
 
         scanner.close();
 
-
-
-        try {
-            if (Path.of(JOBS_SETTINGS_FILE).toFile().createNewFile()) {
-                LOGGER.log(Level.INFO, "File \"{0}\" has been created", JOBS_SETTINGS_FILE);
-            }
-            else {
-                LOGGER.log(Level.INFO, "File \"{0}\" has already existed", JOBS_SETTINGS_FILE);
-            }
-
-            if (branchName.isEmpty()) {
-                configurator.saveRepositoryConfig(repositoryPath, "master");
-            } else {
-                configurator.saveRepositoryConfig(repositoryPath, branchName);
-            }
-        } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
-            return 1;
+        if (branchName.isEmpty()) {
+            configurator.saveRepositoryConfig(repositoryPath, "master");
+        } else {
+            configurator.saveRepositoryConfig(repositoryPath, branchName);
         }
 
         System.out.println("Successful initialization!");
