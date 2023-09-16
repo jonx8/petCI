@@ -4,61 +4,78 @@ package ru.etu.petci.configuration;
 import ru.etu.petci.jobs.Job;
 import ru.etu.petci.observers.RepositoryObserver;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
+import java.io.*;
+import java.util.*;
 
-public class Configurator {
+public final class Configurator {
 
-    public static final String JOBS_PREFERENCES = "petCI/jobs";
-    public static final String REPOSITORY_PREFERENCES = "petCI/repositorySettings";
+    public static final String JOBS_DIR = "jobs/";
+    public static final String REPOSITORY_PROPERTY = ".repo.properties";
 
-    public RepositoryObserver readRepositoryConfig() {
-        var observer = new RepositoryObserver();
-        var repoPreferences = Preferences.userRoot().node(REPOSITORY_PREFERENCES);
-        observer.setRepositoryPath(repoPreferences.get("repository_path", "."));
-        observer.setBranchName(repoPreferences.get("branch_name", "master"));
-        observer.setLastHash(repoPreferences.get("last_hash", ""));
-        return observer;
+    private Configurator() {
     }
 
-    public void saveRepositoryConfig(String repoPath, String branchName, String lastHash) {
-        Preferences repoPreferences = Preferences.userRoot().node(REPOSITORY_PREFERENCES);
-        repoPreferences.put("repository_path", Path.of(repoPath).toAbsolutePath().normalize().toString());
-        repoPreferences.put("branch_name", branchName);
-        repoPreferences.put("last_hash", lastHash.length() == 40 ? lastHash : "null");
-    }
-
-    public void saveRepositoryConfig(String repoPath, String branchName) {
-        saveRepositoryConfig(repoPath, branchName, "");
-    }
-
-
-    public List<Job> readJobsConfig() throws BackingStoreException {
-        List<Job> jobsList = new ArrayList<>();
-        var jobsPreferences = Preferences.userRoot().node(JOBS_PREFERENCES);
-        for (String jobName : jobsPreferences.childrenNames()) {
-            Preferences childrenNode = jobsPreferences.node(jobName);
-            Path scriptPath = Path.of(childrenNode.get("script_path", "."));
-            boolean isActive = Boolean.parseBoolean(childrenNode.get("active", "false"));
-            jobsList.add(new Job(scriptPath, jobName, isActive));
+    public static RepositoryObserver readRepositoryConfig() throws IOException {
+        try (var reader = new FileReader(REPOSITORY_PROPERTY)) {
+            Properties properties = new Properties();
+            properties.load(reader);
+            String branchName = properties.getProperty("branch_name");
+            String lastHash = properties.getProperty("last_hash");
+            return RepositoryObserver.of(branchName, lastHash);
         }
-        return jobsList;
     }
 
 
-    public void saveJobsConfig(Job job) throws BackingStoreException {
-        var jobsPreferences = Preferences.userRoot().node(JOBS_PREFERENCES);
+    public static void saveRepositoryConfig(String branchName, String lastHash) throws IOException {
+        try (var writer = new FileWriter(REPOSITORY_PROPERTY)) {
+            Properties properties = new Properties();
+            properties.setProperty("last_hash", lastHash);
+            properties.setProperty("branch_name", branchName);
+            properties.store(writer, "Repository config");
+        }
+    }
 
-        if (!jobsPreferences.nodeExists(job.getName())) {
-            jobsPreferences.node(job.getName()).put("script_path", job.getScriptFile().toString());
-            jobsPreferences.node(job.getName()).put("active", String.valueOf(job.isActive()));
-        } else {
-            System.out.printf("Job with name \"%s\" has already existed%n", job.getName());
+    public static void saveRepositoryConfig(String branchName) throws IOException {
+        saveRepositoryConfig(branchName, "");
+    }
+
+
+    public static List<Job> readJobsConfig() {
+        List<Job> jobs = new ArrayList<>();
+        File jobsDir = new File(JOBS_DIR);
+        File[] propertiesArray = jobsDir.listFiles(((dir, name) -> name.toLowerCase().endsWith(".properties")));
+        Objects.requireNonNull(propertiesArray);
+        for (File jobProperty : propertiesArray) {
+            try (var reader = new FileReader(jobProperty)) {
+                Properties properties = new Properties();
+                properties.load(reader);
+                String jobName = properties.getProperty("name");
+                String scriptName = properties.getProperty("script_name");
+                boolean isActive = Boolean.parseBoolean(properties.getProperty("active"));
+                if (jobName != null && scriptName != null) {
+                    jobs.add(new Job(jobName, scriptName, isActive));
+                } else {
+                    System.out.printf("File \"%s\" is corrupted%n", jobProperty.getName());
+                }
+
+            } catch (IOException e) {
+                // Ignoring because it needs to continue work.
+                // TODO Logging
+                System.out.printf("Error while reading \"%s\" file%n", jobProperty.getName());
+            }
+        }
+        return jobs;
+    }
+
+
+    public static void saveJobConfig(Job job) throws IOException {
+        Objects.requireNonNull(job);
+        try (var writer = new FileWriter(JOBS_DIR + job.name() + ".properties")) {
+            Properties properties = new Properties();
+            properties.setProperty("name", job.name());
+            properties.setProperty("script_name", job.scriptName());
+            properties.setProperty("active", String.valueOf(job.isActive()));
+            properties.store(writer, "Job settings");
         }
     }
 }
-
-
