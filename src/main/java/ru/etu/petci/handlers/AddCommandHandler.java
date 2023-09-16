@@ -1,10 +1,13 @@
 package ru.etu.petci.handlers;
 
 import ru.etu.petci.configuration.Configurator;
+import ru.etu.petci.jobs.Job;
 
+import java.nio.file.Path;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 
 public class AddCommandHandler implements CommandHandler {
     private static final Logger LOGGER;
@@ -17,7 +20,7 @@ public class AddCommandHandler implements CommandHandler {
     @Override
     public int handle(String arg) {
 
-        Scanner scanner = new Scanner(System.in);
+        var scanner = new Scanner(System.in);
         var configurator = new Configurator();
 
         System.out.print("Job name: ");
@@ -34,8 +37,15 @@ public class AddCommandHandler implements CommandHandler {
             return 1;
         }
 
-        configurator.saveJobsConfig(jobName, scriptPath);
         scanner.close();
+
+        try {
+            configurator.saveJobsConfig(new Job(Path.of(scriptPath), jobName));
+        } catch (BackingStoreException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+            return 1;
+        }
+
         return 0;
     }
 }

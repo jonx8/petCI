@@ -39,21 +39,24 @@ public class Configurator {
     public List<Job> readJobsConfig() throws BackingStoreException {
         List<Job> jobsList = new ArrayList<>();
         var jobsPreferences = Preferences.userRoot().node(JOBS_PREFERENCES);
-        for (String jobName : jobsPreferences.keys()) {
-            Path scriptPath = Path.of(jobsPreferences.get(jobName, null));
-            jobsList.add(new Job(scriptPath, jobName));
+        for (String jobName : jobsPreferences.childrenNames()) {
+            Preferences childrenNode = jobsPreferences.node(jobName);
+            Path scriptPath = Path.of(childrenNode.get("script_path", "."));
+            boolean isActive = Boolean.parseBoolean(childrenNode.get("active", "false"));
+            jobsList.add(new Job(scriptPath, jobName, isActive));
         }
         return jobsList;
     }
 
 
-    public void saveJobsConfig(String jobName, String scriptPath) {
+    public void saveJobsConfig(Job job) throws BackingStoreException {
         var jobsPreferences = Preferences.userRoot().node(JOBS_PREFERENCES);
 
-        if (jobsPreferences.get(jobName, null) == null) {
-            jobsPreferences.put(jobName, Path.of(scriptPath).toAbsolutePath().normalize().toString());
+        if (!jobsPreferences.nodeExists(job.getName())) {
+            jobsPreferences.node(job.getName()).put("script_path", job.getScriptFile().toString());
+            jobsPreferences.node(job.getName()).put("active", String.valueOf(job.isActive()));
         } else {
-            System.out.printf("Job with name \"%s\" has already existed%n", jobName);
+            System.out.printf("Job with name \"%s\" has already existed%n", job.getName());
         }
     }
 }
