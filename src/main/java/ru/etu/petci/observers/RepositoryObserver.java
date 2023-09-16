@@ -3,11 +3,12 @@ package ru.etu.petci.observers;
 import ru.etu.petci.exceptions.RepositoryNotFoundException;
 import ru.etu.petci.jobs.JobsExecutor;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -84,10 +85,9 @@ public class RepositoryObserver {
 
     private void checkRepositoryUpdate() {
         Path lastCommitMaster = Path.of(repositoryPath + "/.git/refs/heads/" + branchName);
-        try (Scanner scanner = new Scanner(lastCommitMaster.toFile())) {
-            String currentHash = scanner.nextLine();
+        try (var reader = new BufferedReader(new FileReader(lastCommitMaster.toFile()))) {
+            String currentHash = reader.readLine();
             if (currentHash.length() == 40 && !currentHash.equals(lastHash)) {
-                // Update hash
                 lastHash = currentHash;
                 Preferences.userRoot().node(REPOSITORY_PREFERENCES).put("last_hash", lastHash);
 
