@@ -23,10 +23,10 @@ public class JobsExecutor {
         Objects.requireNonNull(jobs);
         for (Job job : jobs) {
             if (!job.isActive()) {
-                System.out.printf("Job \"%s\": Deactivated%n", job.getName());
+                System.out.printf("Job \"%s\": Deactivated%n", job.name());
                 continue;
             }
-            System.out.printf("Run job \"%s\"...%n%n", job.getName());
+            System.out.printf("Run job \"%s\"...%n%n", job.name());
 
             if (job.execute() == 0) {
                 System.out.printf("%n--Succeed--%n");
