@@ -22,12 +22,12 @@ public class JobsExecutor {
     public void runJobs() throws IOException {
         Objects.requireNonNull(jobs);
         for (Job job : jobs) {
-            System.out.println(job.getScriptFile().toAbsolutePath());
-            System.out.printf("Run job \"%s\"...%n%n", job.getName());
             if (!job.isActive()) {
-                System.out.println(": Deactivated");
+                System.out.printf("Job \"%s\": Deactivated%n", job.getName());
                 continue;
             }
+            System.out.printf("Run job \"%s\"...%n%n", job.getName());
+
             if (job.execute() == 0) {
                 System.out.printf("%n--Succeed--%n");
             } else {

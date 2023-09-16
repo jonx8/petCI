@@ -11,8 +11,14 @@ public class Job {
     private String name;
     private final Path scriptFile;
 
-    public Job(Path scriptFile, String name) {
+    public Job(Path scriptFile, String name, boolean isActive) {
         this.scriptFile = scriptFile.toAbsolutePath().normalize();
+        this.name = name;
+        this.isActive = isActive;
+    }
+
+    public Job(Path scriptFile, String name) {
+        this.scriptFile = scriptFile;
         this.name = name;
     }
 
