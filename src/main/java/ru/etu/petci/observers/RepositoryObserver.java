@@ -46,7 +46,8 @@ public class RepositoryObserver {
             gitProcess.waitFor();
             exitStatus = gitProcess.exitValue();
         } catch (IOException e) {
-            LOGGER.warning("Error while executing 'git ls-remote'.%n" + e.getMessage());
+            LOGGER.severe(e.getMessage());
+            return false;
         } finally {
             if (gitProcess != null) {
                 gitProcess.destroy();
