@@ -11,14 +11,12 @@ import java.util.logging.Logger;
 
 public final class Configurator {
 
-    public static final String JOBS_DIR = "jobs/";
-    public static final String REPOSITORY_PROPERTY = ".repo.properties";
+    public static final String JOBS_DIR = "petCI/jobs/";
+    public static final String LOGS_DIR = "petCI/logs/";
+
+    public static final String REPOSITORY_PROPERTY = "petCI/repo.properties";
 
     private static final Logger LOGGER = Logger.getLogger(Configurator.class.getName());
-
-    static {
-        LOGGER.setLevel(Level.ALL);
-    }
 
     private Configurator() {
     }

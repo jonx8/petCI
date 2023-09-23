@@ -9,13 +9,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static ru.etu.petci.configuration.Configurator.JOBS_DIR;
+import static ru.etu.petci.configuration.Configurator.LOGS_DIR;
 
 public class InitCommandHandler implements CommandHandler {
     private static final Logger LOGGER = Logger.getLogger(InitCommandHandler.class.getName());
-
-    static {
-        LOGGER.setLevel(Level.INFO);
-    }
 
 
     @Override
@@ -30,12 +27,10 @@ public class InitCommandHandler implements CommandHandler {
         }
 
         try {
+            new File(JOBS_DIR).mkdirs();
+            new File(LOGS_DIR).mkdirs();
             Configurator.saveRepositoryConfig(branchName);
-            if (new File(JOBS_DIR).mkdir()) {
-                LOGGER.log(Level.CONFIG, "Directory \"{0}\" has been created", JOBS_DIR);
-            } else {
-                LOGGER.log(Level.WARNING, "Failed while creating directory \"{0}\"", JOBS_DIR);
-            }
+
         } catch (IOException e) {
             LOGGER.severe(e.getMessage());
             return 1;
