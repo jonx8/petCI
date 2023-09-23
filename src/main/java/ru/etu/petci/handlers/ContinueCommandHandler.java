@@ -14,24 +14,21 @@ import java.util.logging.Logger;
 
 public class ContinueCommandHandler implements CommandHandler {
 
-    private static final Logger LOGGER;
+    private static final Logger LOGGER = Logger.getLogger(ContinueCommandHandler.class.getName());
 
     static {
-        LOGGER = Logger.getLogger(ContinueCommandHandler.class.getName());
-        LOGGER.setLevel(Level.WARNING);
+        LOGGER.setLevel(Level.INFO);
     }
 
     @Override
-    public int handle(String arg) {
-        Objects.requireNonNull(arg);
-
+    public int handle(String[] args) {
         try {
             RepositoryObserver repositoryObserver = Configurator.readRepositoryConfig();
             List<Job> jobs = Configurator.readJobsConfig();
             repositoryObserver.setExecutor(new JobsExecutor(jobs));
             repositoryObserver.start();
         } catch (InterruptedException e) {
-            LOGGER.log(Level.SEVERE, "The program was interrupted");
+            LOGGER.severe("The program was interrupted");
             Thread.currentThread().interrupt();
         } catch (IOException e) {
             LOGGER.severe(e.getMessage());

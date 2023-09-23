@@ -77,8 +77,6 @@ public class RepositoryObserver {
                     LOGGER.info("Running jobs failed. New commit has been rejected");
                     rejectCommit();
                 }
-
-
             } else {
                 LOGGER.fine("Commits checked. No new commits found.");
             }
@@ -94,6 +92,7 @@ public class RepositoryObserver {
             LOGGER.severe("No information about last commit. Impossible to roll back");
             service.shutdown();
         }
+
         Process gitProcess = null;
         try {
             gitProcess = Runtime.getRuntime().exec("git reset --hard %s".formatted(lastHash));
@@ -113,7 +112,6 @@ public class RepositoryObserver {
 
     public void start() throws InterruptedException {
         if (isRepositoryExists()) {
-            // Check for a new commit per 3 seconds
             service.scheduleWithFixedDelay(this::checkRepositoryUpdate, 0, 3, TimeUnit.SECONDS);
             Thread.currentThread().join();
         }

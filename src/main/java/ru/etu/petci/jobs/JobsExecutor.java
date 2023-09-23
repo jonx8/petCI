@@ -12,7 +12,7 @@ public class JobsExecutor {
     private static final Logger LOGGER = Logger.getLogger(JobsExecutor.class.getName());
 
     static {
-        LOGGER.setLevel(Level.WARNING);
+        LOGGER.setLevel(Level.INFO);
     }
 
     public JobsExecutor(List<Job> jobs) {
@@ -26,13 +26,13 @@ public class JobsExecutor {
                 System.out.printf("Job \"%s\": Deactivated%n", job.name());
                 continue;
             }
-            System.out.printf("Run job \"%s\"...%n%n", job.name());
+            System.out.printf("--==============Run job \"%s\"==============--.%n%n", job.name());
 
-            boolean result = job.execute() == 0;
-            System.out.printf(result ? "%n--Succeed--%n" : "%n--Failed--%n");
-            if (!result) {
+            if (job.execute() != 0) {
+                System.out.printf("%n--==============Failed==============--%n");
                 return false;
             }
+            System.out.printf("%n--==============Succeed==============--%n");
         }
         return true;
     }
