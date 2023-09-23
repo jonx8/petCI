@@ -19,7 +19,7 @@ public class JobsExecutor {
         this.jobs = jobs;
     }
 
-    public void runJobs() throws IOException {
+    public boolean runJobs() throws IOException {
         Objects.requireNonNull(jobs);
         for (Job job : jobs) {
             if (!job.isActive()) {
@@ -28,12 +28,13 @@ public class JobsExecutor {
             }
             System.out.printf("Run job \"%s\"...%n%n", job.name());
 
-            if (job.execute() == 0) {
-                System.out.printf("%n--Succeed--%n");
-            } else {
-                System.out.printf("%n--Failed--%n");
+            boolean result = job.execute() == 0;
+            System.out.printf(result ? "%n--Succeed--%n" : "%n--Failed--%n");
+            if (!result) {
+                return false;
             }
         }
+        return true;
     }
 
 }

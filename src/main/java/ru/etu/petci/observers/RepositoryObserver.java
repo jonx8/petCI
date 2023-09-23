@@ -40,7 +40,7 @@ public class RepositoryObserver {
 
     public boolean isRepositoryExists() throws InterruptedException {
         Process gitProcess = null;
-        int exitStatus = -1;
+        int exitStatus;
         try {
             gitProcess = Runtime.getRuntime().exec("git status");
             gitProcess.waitFor();
@@ -67,19 +67,47 @@ public class RepositoryObserver {
     private void checkRepositoryUpdate() {
         Path lastCommit = Path.of(".git/refs/heads/" + branchName);
         try (Scanner scanner = new Scanner(lastCommit.toFile())) {
-            String currentHash = scanner.nextLine();
-            if (currentHash.length() == 40 && !currentHash.equals(lastHash)) {
-                lastHash = currentHash;
-                Configurator.saveRepositoryConfig(branchName, lastHash);
-                LOGGER.log(Level.INFO, "Commits checked. New commit was found. Hash: {0}", lastHash);
-                executor.runJobs();
+            String newHash = scanner.nextLine();
+            if (newHash.length() == 40 && !newHash.equals(lastHash)) {
+                LOGGER.log(Level.INFO, "Commits checked. New commit was found. Hash: {0}", newHash);
+                if (executor.runJobs()) {
+                    lastHash = newHash;
+                    Configurator.saveRepositoryConfig(branchName, lastHash);
+                } else {
+                    LOGGER.info("Running jobs failed. New commit has been rejected");
+                    rejectCommit();
+                }
+
+
             } else {
                 LOGGER.fine("Commits checked. No new commits found.");
             }
         } catch (IOException e) {
-            LOGGER.severe(e.getMessage() + "Unable to find branch \"%s\"".formatted(getBranchName()));
+            LOGGER.severe(e.getMessage());
             service.shutdown();
             System.exit(1);
+        }
+    }
+
+    private void rejectCommit() throws IOException {
+        if (lastHash.length() != 40) {
+            LOGGER.severe("No information about last commit. Impossible to roll back");
+            service.shutdown();
+        }
+        Process gitProcess = null;
+        try {
+            gitProcess = Runtime.getRuntime().exec("git reset --hard %s".formatted(lastHash));
+            if (gitProcess.waitFor() != 0) {
+                LOGGER.warning("Error while rejecting");
+            }
+        } catch (IOException e) {
+            throw new IOException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            if (gitProcess != null) {
+                gitProcess.destroy();
+            }
         }
     }
 
