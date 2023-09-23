@@ -27,8 +27,12 @@ public class InitCommandHandler implements CommandHandler {
         }
 
         try {
-            new File(JOBS_DIR).mkdirs();
-            new File(LOGS_DIR).mkdirs();
+            if (new File(JOBS_DIR).mkdirs()) {
+                LOGGER.log(Level.WARNING, "Unable to create {0} directory.", JOBS_DIR);
+            }
+            if (new File(LOGS_DIR).mkdirs()) {
+                LOGGER.log(Level.WARNING, "Unable to create {0} directory.", LOGS_DIR);
+            }
             Configurator.saveRepositoryConfig(branchName);
 
         } catch (IOException e) {

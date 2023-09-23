@@ -11,11 +11,6 @@ import java.util.logging.Logger;
 public class AddJobCommandHandler implements CommandHandler {
     private static final Logger LOGGER = Logger.getLogger(AddJobCommandHandler.class.getName());
 
-
-    static {
-        LOGGER.setLevel(Level.INFO);
-    }
-
     @Override
     public int handle(String[] args) {
         try (var scanner = new Scanner(System.in)) {

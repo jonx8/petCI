@@ -16,10 +16,6 @@ public class ContinueCommandHandler implements CommandHandler {
 
     private static final Logger LOGGER = Logger.getLogger(ContinueCommandHandler.class.getName());
 
-    static {
-        LOGGER.setLevel(Level.INFO);
-    }
-
     @Override
     public int handle(String[] args) {
         try {
@@ -28,7 +24,7 @@ public class ContinueCommandHandler implements CommandHandler {
             repositoryObserver.setExecutor(new JobsExecutor(jobs));
             repositoryObserver.start();
         } catch (InterruptedException e) {
-            LOGGER.severe("The program was interrupted");
+            LOGGER.warning("The program was interrupted");
             Thread.currentThread().interrupt();
         } catch (IOException e) {
             LOGGER.severe(e.getMessage());
