@@ -8,7 +8,7 @@ public interface CommandHandler {
      * @param arg argument after name of the command. Arg is NotNull.
      * @return exit code for the program
      */
-    int handle(String arg);
+    int handle(String[] args);
 }
 
 

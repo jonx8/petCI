@@ -8,16 +8,16 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class AddCommandHandler implements CommandHandler {
-    private static final Logger LOGGER;
+public class AddJobCommandHandler implements CommandHandler {
+    private static final Logger LOGGER = Logger.getLogger(AddJobCommandHandler.class.getName());
+
 
     static {
-        LOGGER = Logger.getLogger(ContinueCommandHandler.class.getName());
-        LOGGER.setLevel(Level.WARNING);
+        LOGGER.setLevel(Level.INFO);
     }
 
     @Override
-    public int handle(String arg) {
+    public int handle(String[] args) {
         try (var scanner = new Scanner(System.in)) {
             System.out.print("Job name: ");
             String jobName = scanner.nextLine();

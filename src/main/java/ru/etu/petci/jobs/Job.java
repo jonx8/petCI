@@ -11,6 +11,7 @@ public record Job(String name, String scriptName, boolean isActive) {
     public int execute() throws IOException {
         Process scriptProcess = Runtime.getRuntime().exec(JOBS_DIR + scriptName);
         try {
+            // Redirect script output to stdout
             var input = new BufferedReader(new InputStreamReader(scriptProcess.getInputStream()));
             String line;
             while ((line = input.readLine()) != null) {

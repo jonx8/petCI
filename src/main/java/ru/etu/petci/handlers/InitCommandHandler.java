@@ -4,7 +4,6 @@ import ru.etu.petci.configuration.Configurator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,16 +14,13 @@ public class InitCommandHandler implements CommandHandler {
     private static final Logger LOGGER = Logger.getLogger(InitCommandHandler.class.getName());
 
     static {
-        LOGGER.setLevel(Level.WARNING);
+        LOGGER.setLevel(Level.INFO);
     }
 
 
     @Override
-    public int handle(String arg) {
-        Objects.requireNonNull(arg);
+    public int handle(String[] args) {
         var scanner = new Scanner(System.in);
-
-        System.out.println("--Initializing--");
 
         // If branchName is empty, using master-branch
         System.out.print("Name of observing branch (default - master): ");
@@ -36,7 +32,7 @@ public class InitCommandHandler implements CommandHandler {
         try {
             Configurator.saveRepositoryConfig(branchName);
             if (new File(JOBS_DIR).mkdir()) {
-                LOGGER.log(Level.INFO, "Directory \"{0}\" has been created", JOBS_DIR);
+                LOGGER.log(Level.CONFIG, "Directory \"{0}\" has been created", JOBS_DIR);
             } else {
                 LOGGER.log(Level.WARNING, "Failed while creating directory \"{0}\"", JOBS_DIR);
             }
