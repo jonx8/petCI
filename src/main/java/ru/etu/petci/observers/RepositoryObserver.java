@@ -23,9 +23,6 @@ public class RepositoryObserver {
     private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private static final Logger LOGGER = Logger.getLogger(RepositoryObserver.class.getName());
 
-    static {
-        LOGGER.setLevel(Level.INFO);
-    }
 
     public static RepositoryObserver of(String branchName, String lastHash) {
         Objects.requireNonNull(branchName);
@@ -71,14 +68,13 @@ public class RepositoryObserver {
             if (newHash.length() == 40 && !newHash.equals(lastHash)) {
                 LOGGER.log(Level.INFO, "Commits checked. New commit was found. Hash: {0}", newHash);
                 if (executor.runJobs()) {
+                    LOGGER.fine("Jobs completed successfully. Update last commit hash.");
                     lastHash = newHash;
                     Configurator.saveRepositoryConfig(branchName, lastHash);
                 } else {
                     LOGGER.info("Running jobs failed. New commit has been rejected");
                     rejectCommit();
                 }
-            } else {
-                LOGGER.fine("Commits checked. No new commits found.");
             }
         } catch (IOException e) {
             LOGGER.severe(e.getMessage());
@@ -103,6 +99,7 @@ public class RepositoryObserver {
             throw new IOException(e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            LOGGER.warning("The program was interrupted.");
         } finally {
             if (gitProcess != null) {
                 gitProcess.destroy();

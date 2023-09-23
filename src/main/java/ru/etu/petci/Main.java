@@ -1,22 +1,32 @@
 package ru.etu.petci;
 
+
 import ru.etu.petci.handlers.AddJobCommandHandler;
 import ru.etu.petci.handlers.CommandHandler;
 import ru.etu.petci.handlers.ContinueCommandHandler;
 import ru.etu.petci.handlers.InitCommandHandler;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Main {
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
     private static final Map<String, CommandHandler> commandHandlersMap = new HashMap<>();
+    private static final Logger LOGGER;
 
 
     static {
-        LOGGER.setLevel(Level.WARNING);
+        try (InputStream input = Main.class.getClassLoader().getResourceAsStream("logging.properties")) {
+            LogManager.getLogManager().readConfiguration(input);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        LOGGER = Logger.getLogger(Main.class.getName());
+
         commandHandlersMap.put("init", new InitCommandHandler());
         commandHandlersMap.put("continue", new ContinueCommandHandler());
         commandHandlersMap.put("add", new AddJobCommandHandler());
@@ -24,12 +34,16 @@ public class Main {
 
 
     public static void main(String[] args) {
+        int exitStatus;
         if (args.length == 0) {
             showHelp();
-            System.exit(1);
+            exitStatus = 1;
+        } else {
+            CommandHandler handler = commandHandlersMap.get(args[0].trim());
+            exitStatus = handler.handle(args);
         }
-        CommandHandler handler = commandHandlersMap.get(args[0].trim());
-        System.exit(handler.handle(args));
+        LOGGER.log(Level.FINE, "The program finished with exit code {0}", exitStatus);
+        System.exit(exitStatus);
     }
 
 

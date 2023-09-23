@@ -11,14 +11,12 @@ import java.util.logging.Logger;
 
 public final class Configurator {
 
-    public static final String JOBS_DIR = "jobs/";
-    public static final String REPOSITORY_PROPERTY = ".repo.properties";
+    public static final String JOBS_DIR = "petCI/jobs/";
+    public static final String LOGS_DIR = "petCI/logs/";
+
+    public static final String REPOSITORY_PROPERTY = "petCI/repo.properties";
 
     private static final Logger LOGGER = Logger.getLogger(Configurator.class.getName());
-
-    static {
-        LOGGER.setLevel(Level.ALL);
-    }
 
     private Configurator() {
     }
@@ -40,6 +38,7 @@ public final class Configurator {
             properties.setProperty("last_hash", lastHash);
             properties.setProperty("branch_name", branchName);
             properties.store(writer, "Repository config");
+            LOGGER.log(Level.FINE, "File {0} was updated", REPOSITORY_PROPERTY);
         }
     }
 
@@ -60,9 +59,11 @@ public final class Configurator {
             try (var reader = new FileReader(jobProperty)) {
                 Properties properties = new Properties();
                 properties.load(reader);
+
                 String jobName = properties.getProperty("name");
                 String scriptName = properties.getProperty("script_name");
                 boolean isActive = Boolean.parseBoolean(properties.getProperty("active"));
+
                 if (jobName != null && scriptName != null) {
                     jobs.add(new Job(jobName, scriptName, isActive));
                 } else {
@@ -86,6 +87,7 @@ public final class Configurator {
             properties.setProperty("script_name", job.scriptName());
             properties.setProperty("active", String.valueOf(job.isActive()));
             properties.store(writer, "Job settings");
+            LOGGER.log(Level.FINE, "File {0} was updated", JOBS_DIR + job.name() + ".properties");
         }
     }
 }
