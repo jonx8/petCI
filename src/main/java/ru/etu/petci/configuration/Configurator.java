@@ -6,11 +6,19 @@ import ru.etu.petci.observers.RepositoryObserver;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class Configurator {
 
     public static final String JOBS_DIR = "jobs/";
     public static final String REPOSITORY_PROPERTY = ".repo.properties";
+
+    private static final Logger LOGGER = Logger.getLogger(Configurator.class.getName());
+
+    static {
+        LOGGER.setLevel(Level.ALL);
+    }
 
     private Configurator() {
     }
@@ -40,11 +48,14 @@ public final class Configurator {
     }
 
 
-    public static List<Job> readJobsConfig() {
+    public static List<Job> readJobsConfig() throws IOException {
         List<Job> jobs = new ArrayList<>();
+
         File jobsDir = new File(JOBS_DIR);
         File[] propertiesArray = jobsDir.listFiles(((dir, name) -> name.toLowerCase().endsWith(".properties")));
-        Objects.requireNonNull(propertiesArray);
+        if (Objects.isNull(propertiesArray)) {
+            throw new IOException("Error while reading jobs directory: \"%s\"".formatted(jobsDir.getAbsolutePath()));
+        }
         for (File jobProperty : propertiesArray) {
             try (var reader = new FileReader(jobProperty)) {
                 Properties properties = new Properties();
@@ -55,13 +66,12 @@ public final class Configurator {
                 if (jobName != null && scriptName != null) {
                     jobs.add(new Job(jobName, scriptName, isActive));
                 } else {
-                    System.out.printf("File \"%s\" is corrupted%n", jobProperty.getName());
+                    LOGGER.log(Level.WARNING, "File \"{0}\" is corrupted", jobProperty.getName());
                 }
 
             } catch (IOException e) {
-                // Ignoring because it needs to continue work.
-                // TODO Logging
-                System.out.printf("Error while reading \"%s\" file%n", jobProperty.getName());
+                // Only logging because needed to continue the work of application.
+                LOGGER.log(Level.WARNING, "Error while reading \"{0}\" file", jobProperty.getName());
             }
         }
         return jobs;

@@ -3,7 +3,6 @@ package ru.etu.petci.observers;
 import ru.etu.petci.configuration.Configurator;
 import ru.etu.petci.jobs.JobsExecutor;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -19,8 +18,8 @@ import java.util.logging.Logger;
 public class RepositoryObserver {
 
     private String lastHash;         // Hash of last commit
-    private String branchName;       // Name of the observed branch
     private JobsExecutor executor = new JobsExecutor(Collections.emptyList());
+    private final String branchName;       // Name of the observed branch
     private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private static final Logger LOGGER = Logger.getLogger(RepositoryObserver.class.getName());
 
@@ -47,7 +46,8 @@ public class RepositoryObserver {
             gitProcess.waitFor();
             exitStatus = gitProcess.exitValue();
         } catch (IOException e) {
-            LOGGER.warning("Error while executing 'git ls-remote'.%n" + e.getMessage());
+            LOGGER.severe(e.getMessage());
+            return false;
         } finally {
             if (gitProcess != null) {
                 gitProcess.destroy();
@@ -58,11 +58,6 @@ public class RepositoryObserver {
 
     public String getLastHash() {
         return lastHash;
-    }
-
-    public void setBranchName(String branchName) {
-        Objects.requireNonNull(branchName);
-        this.branchName = branchName;
     }
 
     public String getBranchName() {
@@ -79,15 +74,10 @@ public class RepositoryObserver {
                 LOGGER.log(Level.INFO, "Commits checked. New commit was found. Hash: {0}", lastHash);
                 executor.runJobs();
             } else {
-                LOGGER.info("Commits checked. No new commits found.");
+                LOGGER.fine("Commits checked. No new commits found.");
             }
-        } catch (FileNotFoundException e) {
-            LOGGER.severe(e.getMessage());
-            System.out.printf("Unable to find branch \"%s\"%n", getBranchName());
-            service.shutdown();
-            System.exit(1);
         } catch (IOException e) {
-            LOGGER.severe(e.getMessage());
+            LOGGER.severe(e.getMessage() + "Unable to find branch \"%s\"".formatted(getBranchName()));
             service.shutdown();
             System.exit(1);
         }
