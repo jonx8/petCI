@@ -87,7 +87,7 @@ public final class Configurator {
             properties.setProperty("script_name", job.scriptName());
             properties.setProperty("active", String.valueOf(job.isActive()));
             properties.store(writer, "Job settings");
-            LOGGER.log(Level.FINE, "File {0} was updated", JOBS_DIR + job.name() + ".properties");
+            LOGGER.log(Level.FINE, "Config for job \"{0}\" was updated", job.name());
         }
     }
 }
