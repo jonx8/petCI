@@ -17,7 +17,8 @@ public class Main {
 
 
     static {
-        try (InputStream input = Main.class.getClassLoader().getResourceAsStream("logging.properties")) {
+        try (InputStream input = Main.class.getResourceAsStream("logging.properties")) {
+
             LogManager.getLogManager().readConfiguration(input);
         } catch (IOException e) {
             System.out.println("Error while reading \"logging.properties\"");
