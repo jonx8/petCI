@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class ContinueCommand implements Command {
+public class ObserveCommand implements Command {
 
-    private static final Logger LOGGER = Logger.getLogger(ContinueCommand.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ObserveCommand.class.getName());
 
     @Override
     public int handle(String[] args) {

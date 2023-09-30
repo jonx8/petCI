@@ -3,6 +3,8 @@ package ru.etu.petci.handlers;
 import java.util.HashMap;
 import java.util.Map;
 
+import static ru.etu.petci.Main.showHelp;
+
 public class JobCommand implements Command {
     private static final Map<String, Command> commandMap = new HashMap<>();
 
@@ -14,7 +16,6 @@ public class JobCommand implements Command {
         commandMap.put("list", new ListJobCommand());
     }
 
-
     @Override
     public int handle(String[] args) {
         if (args.length > 1) {
@@ -23,17 +24,7 @@ public class JobCommand implements Command {
                 return cmd.handle(args);
             }
         }
-        showJobHelp();
+        showHelp();
         return 1;
-    }
-
-
-    private void showJobHelp() {
-        System.out.println("Job command help:");
-        System.out.println("add - add new job");
-        System.out.println("delete (job name) - delete job");
-        System.out.println("activate (job name) - activate job");
-        System.out.println("deactivate (job name) - activate job");
-        System.out.println("list - show list of jobs");
     }
 }
