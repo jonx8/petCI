@@ -11,8 +11,8 @@ import java.util.logging.Logger;
 import static ru.etu.petci.configuration.Configurator.JOBS_DIR;
 import static ru.etu.petci.configuration.Configurator.LOGS_DIR;
 
-public class InitCommandHandler implements CommandHandler {
-    private static final Logger LOGGER = Logger.getLogger(InitCommandHandler.class.getName());
+public class InitCommand implements Command {
+    private static final Logger LOGGER = Logger.getLogger(InitCommand.class.getName());
 
 
     @Override
@@ -27,10 +27,10 @@ public class InitCommandHandler implements CommandHandler {
         }
 
         try {
-            if (new File(JOBS_DIR).mkdirs()) {
+            if (!new File(JOBS_DIR).mkdirs()) {
                 LOGGER.log(Level.WARNING, "Unable to create {0} directory.", JOBS_DIR);
             }
-            if (new File(LOGS_DIR).mkdirs()) {
+            if (!new File(LOGS_DIR).mkdirs()) {
                 LOGGER.log(Level.WARNING, "Unable to create {0} directory.", LOGS_DIR);
             }
             Configurator.saveRepositoryConfig(branchName);

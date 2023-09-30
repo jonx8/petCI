@@ -8,19 +8,17 @@ import ru.etu.petci.observers.RepositoryObserver;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ContinueCommandHandler implements CommandHandler {
+public class ContinueCommand implements Command {
 
-    private static final Logger LOGGER = Logger.getLogger(ContinueCommandHandler.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ContinueCommand.class.getName());
 
     @Override
     public int handle(String[] args) {
         try {
             RepositoryObserver repositoryObserver = Configurator.readRepositoryConfig();
-            List<Job> jobs = Configurator.readJobsConfig();
+            List<Job> jobs = Configurator.readAllJobs();
             repositoryObserver.setExecutor(new JobsExecutor(jobs));
             repositoryObserver.start();
         } catch (InterruptedException e) {
