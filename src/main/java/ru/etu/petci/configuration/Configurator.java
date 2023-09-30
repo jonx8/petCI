@@ -47,32 +47,39 @@ public final class Configurator {
     }
 
 
-    public static List<Job> readJobsConfig() throws IOException {
+    public static Job readJobConfig(File jobProperty) {
+        try (var reader = new FileReader(jobProperty)) {
+            Properties properties = new Properties();
+            properties.load(reader);
+
+            String jobName = properties.getProperty("name");
+            String scriptName = properties.getProperty("script_name");
+            boolean isActive = Boolean.parseBoolean(properties.getProperty("active"));
+
+            if (jobName != null && scriptName != null) {
+                return new Job(jobName, scriptName, isActive);
+            }
+            LOGGER.log(Level.WARNING, "File \"{0}\" is corrupted", jobProperty.getName());
+        } catch (IOException e) {
+            // The exception is ignored because the application should continue to run even without jobs
+            LOGGER.log(Level.WARNING, "Error while reading \"{0}\" file", jobProperty.getName());
+        }
+        return null;
+    }
+
+
+    public static List<Job> readAllJobs() throws IOException {
         List<Job> jobs = new ArrayList<>();
 
         File jobsDir = new File(JOBS_DIR);
         File[] propertiesArray = jobsDir.listFiles(((dir, name) -> name.toLowerCase().endsWith(".properties")));
-        if (Objects.isNull(propertiesArray)) {
-            throw new IOException("Error while reading jobs directory: \"%s\"".formatted(jobsDir.getAbsolutePath()));
+        if (propertiesArray == null) {
+            throw new IOException("Error while reading jobs directory: \"%s\"".formatted(jobsDir.toURI()));
         }
         for (File jobProperty : propertiesArray) {
-            try (var reader = new FileReader(jobProperty)) {
-                Properties properties = new Properties();
-                properties.load(reader);
-
-                String jobName = properties.getProperty("name");
-                String scriptName = properties.getProperty("script_name");
-                boolean isActive = Boolean.parseBoolean(properties.getProperty("active"));
-
-                if (jobName != null && scriptName != null) {
-                    jobs.add(new Job(jobName, scriptName, isActive));
-                } else {
-                    LOGGER.log(Level.WARNING, "File \"{0}\" is corrupted", jobProperty.getName());
-                }
-
-            } catch (IOException e) {
-                // Only logging because needed to continue the work of application.
-                LOGGER.log(Level.WARNING, "Error while reading \"{0}\" file", jobProperty.getName());
+            Job job = readJobConfig(jobProperty);
+            if (job != null) {
+                jobs.add(job);
             }
         }
         return jobs;

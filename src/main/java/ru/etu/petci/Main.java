@@ -1,10 +1,7 @@
 package ru.etu.petci;
 
 
-import ru.etu.petci.handlers.AddJobCommandHandler;
-import ru.etu.petci.handlers.CommandHandler;
-import ru.etu.petci.handlers.ContinueCommandHandler;
-import ru.etu.petci.handlers.InitCommandHandler;
+import ru.etu.petci.handlers.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +12,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Main {
-    private static final Map<String, CommandHandler> commandHandlersMap = new HashMap<>();
+    private static final Map<String, Command> commandHandlersMap = new HashMap<>();
     private static final Logger LOGGER;
 
 
@@ -23,24 +20,27 @@ public class Main {
         try (InputStream input = Main.class.getClassLoader().getResourceAsStream("logging.properties")) {
             LogManager.getLogManager().readConfiguration(input);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Error while reading \"logging.properties\"");
         }
         LOGGER = Logger.getLogger(Main.class.getName());
 
-        commandHandlersMap.put("init", new InitCommandHandler());
-        commandHandlersMap.put("continue", new ContinueCommandHandler());
-        commandHandlersMap.put("add", new AddJobCommandHandler());
+        commandHandlersMap.put("init", new InitCommand());
+        commandHandlersMap.put("continue", new ContinueCommand());
+        commandHandlersMap.put("job", new JobCommand());
     }
 
 
     public static void main(String[] args) {
-        int exitStatus;
-        if (args.length == 0) {
-            showHelp();
-            exitStatus = 1;
+        int exitStatus = 1;
+        if (args.length > 0) {
+            Command cmd = commandHandlersMap.get(args[0]);
+            if (cmd != null) {
+                exitStatus = cmd.handle(args);
+            } else {
+                System.out.printf("'%s' is not a command%n", args[0]);
+            }
         } else {
-            CommandHandler handler = commandHandlersMap.get(args[0].trim());
-            exitStatus = handler.handle(args);
+            showHelp();
         }
         LOGGER.log(Level.FINE, "The program finished with exit code {0}", exitStatus);
         System.exit(exitStatus);

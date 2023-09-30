@@ -1,7 +1,7 @@
 package ru.etu.petci.handlers;
 
 
-public interface CommandHandler {
+public interface Command {
     /**
      * This method should handle a certain command which is entered by user.
      *

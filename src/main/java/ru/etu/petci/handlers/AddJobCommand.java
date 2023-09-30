@@ -5,11 +5,10 @@ import ru.etu.petci.jobs.Job;
 
 import java.io.IOException;
 import java.util.Scanner;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class AddJobCommandHandler implements CommandHandler {
-    private static final Logger LOGGER = Logger.getLogger(AddJobCommandHandler.class.getName());
+public class AddJobCommand implements Command {
+    private static final Logger LOGGER = Logger.getLogger(AddJobCommand.class.getName());
 
     @Override
     public int handle(String[] args) {
