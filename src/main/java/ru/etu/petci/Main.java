@@ -26,7 +26,7 @@ public class Main {
         LOGGER = Logger.getLogger(Main.class.getName());
 
         commandHandlersMap.put("init", new InitCommand());
-        commandHandlersMap.put("continue", new ContinueCommand());
+        commandHandlersMap.put("observe", new ObserveCommand());
         commandHandlersMap.put("job", new JobCommand());
     }
 
@@ -51,7 +51,11 @@ public class Main {
     public static void showHelp() {
         System.out.println("Commands: ");
         System.out.println("init - configure repository for work with CI");
-        System.out.println("continue - start repository monitoring");
-        System.out.println("add - add new job");
+        System.out.println("observe - start repository monitoring");
+        System.out.println("job <command> [arg]");
+        System.out.println("\tdelete <job name> - delete job");
+        System.out.println("\tactivate <job name> - activate job");
+        System.out.println("\tdeactivate <job name> - activate job");
+        System.out.println("\tlist - show list of jobs");
     }
 }
