@@ -1,4 +1,3 @@
-# petCI
 # petCI 
 **petCI** - Simple continuous integration system on Java. 
 
